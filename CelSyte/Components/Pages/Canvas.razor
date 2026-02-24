@@ -1,0 +1,31 @@
+﻿@page "/canvas"
+@rendermode InteractiveServer
+@using System.Runtime.InteropServices
+@inject IJSRuntime JS
+
+<PageTitle>Canvas</PageTitle>
+
+<div class="canvas-layout">
+    <div class="workspace">
+
+    </div>
+    <div class="asset-organizer">
+        <div class="draggable" style="width:200px; height:200px; background-color:#1FD4C0; position:absolute;"></div>
+    </div>
+</div>
+
+@code {
+
+    private IJSObjectReference? module;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "./Components/Pages/Canvas.razor.js");
+
+            await module.InvokeVoidAsync("moveComponent", ".draggable");
+        }
+    }
+
+}

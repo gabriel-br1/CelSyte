@@ -1,0 +1,17 @@
+﻿.canvas-layout {
+    display:flex;
+    justify-content: center;
+    margin-top:2rem;
+}
+
+.workspace {
+    border:1px solid white;
+    height:90vh;
+    width:80vw;
+}
+
+.asset-organizer {
+    border:1px solid white;
+    height:90vh;
+    width:10vw;
+}

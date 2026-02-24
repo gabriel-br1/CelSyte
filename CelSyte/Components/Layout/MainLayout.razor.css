@@ -1,0 +1,10 @@
+* {
+    margin:0px;
+    padding:0px;
+    box-sizing:border-box;
+}
+
+.page {
+    background-color: #1d201f;
+    min-height: 100vh;
+}
