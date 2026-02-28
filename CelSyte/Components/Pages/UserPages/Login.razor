@@ -1,0 +1,33 @@
+﻿@page "/Login"
+@using CelSyte.Models
+@using CelSyte.Service
+@inject CelSyteAuthenticationStateProvider CelsyteAuthenticationStateProvider
+
+<h3>Login</h3>
+<EditForm Model="user" OnSubmit="LoginAsync" FormName="loginForm" class="d-flex flex-column justify-content-center align-items-center">
+    <div>
+        <label for="email" class="form-label">Email</label>
+        <InputText id="email" class="form-control" @bind-Value="user!.Email"></InputText>
+    </div>
+
+    <div>
+        <label for="password" class="form-label">Password</label>
+        <InputText id="password" class="form-control" @bind-Value="user!.Password"></InputText>
+    </div>
+
+    <div>
+        <button class="btn btn-lg">Login</button>
+    </div>
+</EditForm>
+
+@code {
+    [SupplyParameterFromForm]
+    private User? user { get; set; }
+
+    protected override void OnInitialized() => user ??= new();
+
+    private async Task LoginAsync()
+    {
+        await CelsyteAuthenticationStateProvider.LoginAsync(user.Email, user.Password);
+    }
+}

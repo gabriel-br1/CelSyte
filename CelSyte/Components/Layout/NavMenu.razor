@@ -11,6 +11,29 @@
                 <span aria-hidden="true"></span> <span class="navtext">Canvas</span>
             </NavLink>
         </div>
+
+        <AuthorizeView>
+            <NotAuthorized>
+                <div>
+                    <NavLink class="navlink" href="login">
+                        <span aria-hidden="true"></span> <span class="navtext">Login</span>
+                    </NavLink>
+                </div>
+
+                <div>
+                    <NavLink class="navlink" href="register">
+                        <span aria-hidden="true"></span> <span class="navtext">Register</span>
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+            <Authorized>
+                <div>
+                    <NavLink class="navlink" href="logout">
+                        <span aria-hidden="true"></span> <span class="navtext">Logout</span>
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
     </nav>
 </div>
 
