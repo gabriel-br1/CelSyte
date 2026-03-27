@@ -11,6 +11,35 @@
                 <span aria-hidden="true"></span> <span class="navtext">Canvas</span>
             </NavLink>
         </div>
+
+        <AuthorizeView>
+            <Authorized>
+                <div>
+                    <NavLink class="navlink" href="/Account/Logout">
+                        <span aria-hidden="true"></span> <span class="navtext">Logout</span>
+                    </NavLink>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div>
+                    <NavLink class="navlink" href="/Account/Login">
+                        <span aria-hidden="true"></span> <span class="navtext">Login</span>
+                    </NavLink>
+                </div>
+                <div>
+                    <NavLink class="navlink" href="/Account/Register">
+                        <span aria-hidden="true"></span> <span class="navtext">Register</span>
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
     </nav>
 </div>
 
+@code {
+    private string? currentUrl;
+    protected override void OnInitialized()
+    {
+        
+    }
+}
