@@ -9,7 +9,13 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("CelSyteContext") ?? throw new InvalidOperationException("Connection string 'CelSyteContext' not found.");;
 
-builder.Services.AddDbContext<CelSyteContext>(options => options.UseSqlServer(connectionString));
+//builder.Services.AddDbContext<CelSyteContext>(options => options.UseSqlServer(connectionString));
+builder.Services.AddDbContextFactory<CelSyteContext>(options =>
+    options.UseSqlServer(connectionString));
+
+builder.Services.AddQuickGridEntityFrameworkAdapter();
+
+builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -20,6 +26,10 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityRedirectManager>();
 
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+
+builder.Services.AddHttpClient();
+
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAuthentication(options =>
     {
@@ -44,6 +54,30 @@ builder.Services.AddIdentityCore<User>(options =>
 builder.Services.AddSingleton<IEmailSender<User>, IdentityNoOpEmailSender>();
 
 var app = builder.Build();
+
+app.MapPost("/upload-file", async (HttpRequest request) =>
+{
+    var directory = $"{Environment.CurrentDirectory}/wwwroot/images";
+    var form = await request.ReadFormAsync();
+    var file = form.Files["file"];
+
+    if (!Directory.Exists(directory))
+    {
+        Directory.CreateDirectory(directory);
+    }
+
+    if(file != null)
+    {
+        var fullFilePath = Path.Combine(directory, file.FileName);
+        using var stream = File.Create(fullFilePath);
+        await file.CopyToAsync(stream);
+
+        return Results.Ok();
+    }
+
+    return Results.BadRequest();
+
+});
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

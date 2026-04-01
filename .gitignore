@@ -53,6 +53,8 @@ bld/
 *.pgc
 *.pgd
 *.rsp
+*.jpg
+*.png
 
 *.psess
 *.vsp

@@ -1,0 +1,130 @@
+﻿@page "/upload"
+@using CelSyte.Models
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@rendermode InteractiveServer
+@inject IHttpClientFactory httpClientFactory
+@inject IDbContextFactory<CelSyte.Data.CelSyteContext> DbFactory
+@inject IHttpContextAccessor IHttpContextAccessor
+@inject UserManager<User> UserManager
+@inject NavigationManager NavigationManager
+
+<h3>ImageUpload</h3>
+<div class="d-flex flex-column">
+    <InputFile class="my-1" OnChange="LoadFile" />
+</div>
+<div>
+    <EditForm method="post" Model="Image" OnValidSubmit="UploadFile" FormName="ImageForm">
+        <div>
+            <label for="name">Name:</label>
+            <InputText id="name" @bind-Value="Image.Name" class="form-control" />
+        </div>
+        <div>
+            <label for="tags">Tags (space separated):</label>
+            <InputText id="tags" @bind-Value="Image.Tags" class="form-control" />
+        </div>
+        <button type="submit" class="btn btn-lg formbutton col-2 my-1">Upload</button>
+        <p class="text-danger my-1">@ErrorMsg</p>
+    </EditForm>
+</div>
+<div>
+    <ul>
+        <li>@FileName</li>
+        <li>@FileSize</li>
+        <li>@FileType</li>
+        <li>@LastModified</li>
+    </ul>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private Image Image { get; set; } = default!;
+
+    private User user { get; set; }
+
+    private UserManager<User> userManager { get; set; }
+
+    public IHttpClientFactory HttpClientFactory { get; set; }
+
+    public IHttpContextAccessor httpContextAccessor { get; set; }
+
+    private IBrowserFile BrowserFile { get; set; }
+
+    private string ErrorMsg { get; set; }
+
+    private const int MAX_FILESIZE = 10000 * 1024;
+
+    private string FileName { get; set; }
+
+    private long FileSize { get; set; }
+
+    private string FileType { get; set; }
+
+    private DateTimeOffset LastModified { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        HttpClientFactory = httpClientFactory;
+        Image ??= new();
+        userManager = UserManager;
+        httpContextAccessor = IHttpContextAccessor;
+    }
+
+    private async Task UploadFile()
+    {
+        if (BrowserFile != null)
+        {
+            var extension = Path.GetExtension(BrowserFile.Name).ToLower();
+            if (extension.Equals(".jpg") || extension.Equals(".png"))
+            {
+                using var content = new MultipartFormDataContent();
+                var stream = BrowserFile.OpenReadStream(MAX_FILESIZE);
+                var fileContent = new StreamContent(stream);
+                fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(BrowserFile.ContentType);
+                content.Add(fileContent, "file", BrowserFile.Name);
+
+                try
+                {
+                    var currentUser = await userManager.GetUserAsync(httpContextAccessor.HttpContext.User);
+                    var client = HttpClientFactory.CreateClient();
+                    var result = await client.PostAsync("http://localhost:5041/upload-file", content);
+                    System.Diagnostics.Debug.WriteLine(result);
+
+                    Image.FileName = BrowserFile.Name;
+                    Image.UserId = currentUser.Id;
+
+                    using var context = DbFactory.CreateDbContext();
+
+                    context.Image.Add(Image);
+                    await context.SaveChangesAsync();
+
+                    ErrorMsg = "";
+                    NavigationManager.NavigateTo("/images");
+
+                }
+                catch (Exception e)
+                {
+                    System.Diagnostics.Debug.WriteLine(e.Message);
+                }
+            }
+            else
+            {
+                ErrorMsg = "Invalid file type.";
+            }
+        }
+        else
+        {
+            ErrorMsg = "No file provided.";
+        }
+    }
+
+    private async Task LoadFile(InputFileChangeEventArgs args)
+    {
+        BrowserFile = args.File;
+        FileName = BrowserFile.Name;
+        FileSize = BrowserFile.Size;
+        FileType = BrowserFile.ContentType;
+        LastModified = BrowserFile.LastModified;
+        ErrorMsg = "";
+    }
+}

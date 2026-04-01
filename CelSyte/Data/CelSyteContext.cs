@@ -6,5 +6,10 @@ namespace CelSyte.Data
 {
     public class CelSyteContext(DbContextOptions<CelSyteContext> options) : IdentityDbContext<User>(options)
     {
+        public DbSet<CelSyte.Models.Image> Image { get; set; } = default!;
+
     }
+
+    
+
 }
