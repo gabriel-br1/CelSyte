@@ -69,3 +69,9 @@ h1:focus {
 .linkcol {
     color: #f9d34a;
 }
+
+.imagecard {
+    width: 220px;
+    height: 350px;
+    object-fit: cover;
+}

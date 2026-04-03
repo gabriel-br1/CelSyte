@@ -1,0 +1,57 @@
+﻿@page "/Account/Images"
+
+@using System.ComponentModel.DataAnnotations
+@using CelSyte.Services
+@using Microsoft.AspNetCore.Identity
+@using CelSyte.Data
+@using Microsoft.EntityFrameworkCore
+
+@inject UserManager<User> UserManager
+@inject SignInManager<User> SignInManager
+@inject IdentityRedirectManager RedirectManager
+@inject IDbContextFactory<CelSyte.Data.CelSyteContext> DbFactory
+@inject ImageService ImageService
+
+<PageTitle>Profile</PageTitle>
+
+<h3>Images</h3>
+<StatusMessage />
+
+<div class="">
+    <div class="d-flex">
+        @foreach (var image in images)
+        {
+            <div class="mx-2 my-1 border border-light">
+                <a href="@($"/images/edit?id={@image.Id}")" class="linkcol">
+                <img class="imagecard" src="/images/@image.FileName" />
+                <p>@image.Name</p>
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private User? user;
+
+    private List<Image> images { get; set; } = new List<Image>();
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        user = await UserManager.GetUserAsync(HttpContext.User);
+        if (user is null)
+        {
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            return;
+        }
+        else
+        {
+            images = ImageService.findUserImages(user.Id);
+        }
+
+    }
+}

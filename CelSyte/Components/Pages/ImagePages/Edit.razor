@@ -22,6 +22,13 @@ else
                 <DataAnnotationsValidator />
                 <ValidationSummary role="alert"/>
                 <input type="hidden" name="Image.Id" value="@Image.Id" />
+                <!--
+                <div class="mb-3">
+                    <label for="filename" class="form-label">FileName:</label>
+                    <InputText id="filename" @bind-Value="Image.FileName" class="form-control" />
+                    <ValidationMessage For="() => Image.FileName" class="text-danger" />
+                </div>
+                -->
                 <div class="mb-3">
                     <label for="name" class="form-label">Name:</label>
                     <InputText id="name" @bind-Value="Image.Name" class="form-control" />
@@ -32,14 +39,21 @@ else
                     <InputText id="tags" @bind-Value="Image.Tags" class="form-control" />
                     <ValidationMessage For="() => Image.Tags" class="text-danger" />
                 </div>
-                <button type="submit" class="btn btn-primary">Save</button>
+                <!--
+                <div class="mb-3">
+                    <label for="userid" class="form-label">UserId:</label>
+                    <InputText id="userid" @bind-Value="Image.UserId" class="form-control" />
+                    <ValidationMessage For="() => Image.UserId" class="text-danger" />
+                </div>
+                -->
+                <button type="submit" class="btn formbutton">Save</button>
             </EditForm>
         </div>
     </div>
 }
 
 <div>
-    <a href="/images">Back to List</a>
+    <a class="linkcol" href="/images">Back to List</a>
 </div>
 
 @code {
@@ -52,7 +66,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        Image ??= await context.Image.FirstOrDefaultAsync(m => m.Id.Equals(Id));
+        Image ??= await context.Image.FirstOrDefaultAsync(m => m.Id == Id);
 
         if (Image is null)
         {
@@ -89,6 +103,6 @@ else
     private bool ImageExists(int id)
     {
         using var context = DbFactory.CreateDbContext();
-        return context.Image.Any(e => e.Id.Equals(id));
+        return context.Image.Any(e => e.Id == id);
     }
 }

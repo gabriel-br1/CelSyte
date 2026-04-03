@@ -15,8 +15,10 @@
 </p>
 
 <QuickGrid Class="table" Items="context.Image">
+    <PropertyColumn Property="image => image.FileName" />
     <PropertyColumn Property="image => image.Name" />
     <PropertyColumn Property="image => image.Tags" />
+    <PropertyColumn Property="image => image.UserId" />
 
     <TemplateColumn Context="image">
         <a href="@($"images/edit?id={image.Id}")">Edit</a> |

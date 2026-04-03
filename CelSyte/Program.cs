@@ -2,6 +2,7 @@
 using CelSyte.Components.Account;
 using CelSyte.Data;
 using CelSyte.Models;
+using CelSyte.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,8 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityRedirectManager>();
 
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+
+builder.Services.AddScoped<ImageService>();
 
 builder.Services.AddHttpClient();
 
