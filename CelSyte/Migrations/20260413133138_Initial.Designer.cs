@@ -4,6 +4,7 @@ using CelSyte.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,16 +12,33 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CelSyte.Migrations
 {
     [DbContext(typeof(CelSyteContext))]
-    partial class CelSyteContextModelSnapshot : ModelSnapshot
+    [Migration("20260413133138_Initial")]
+    partial class Initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.6")
+                .HasAnnotation("ProductVersion", "10.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("CanvasImage", b =>
+                {
+                    b.Property<int>("CanvasesId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ImagesId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CanvasesId", "ImagesId");
+
+                    b.HasIndex("ImagesId");
+
+                    b.ToTable("CanvasImage");
+                });
 
             modelBuilder.Entity("CelSyte.Models.Canvas", b =>
                 {
@@ -43,47 +61,6 @@ namespace CelSyte.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Canvas");
-                });
-
-            modelBuilder.Entity("CelSyte.Models.CompositionElement", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CanvasId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ImageId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Opacity")
-                        .HasColumnType("int");
-
-                    b.Property<int>("OrderPlacement")
-                        .HasColumnType("int");
-
-                    b.Property<double>("RotationAngle")
-                        .HasColumnType("float");
-
-                    b.Property<double>("Scale")
-                        .HasColumnType("float");
-
-                    b.Property<double>("XCoord")
-                        .HasColumnType("float");
-
-                    b.Property<double>("YCoord")
-                        .HasColumnType("float");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CanvasId");
-
-                    b.HasIndex("ImageId");
-
-                    b.ToTable("CompositionElement");
                 });
 
             modelBuilder.Entity("CelSyte.Models.Image", b =>
@@ -337,6 +314,21 @@ namespace CelSyte.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("CanvasImage", b =>
+                {
+                    b.HasOne("CelSyte.Models.Canvas", null)
+                        .WithMany()
+                        .HasForeignKey("CanvasesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CelSyte.Models.Image", null)
+                        .WithMany()
+                        .HasForeignKey("ImagesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("CelSyte.Models.Canvas", b =>
                 {
                     b.HasOne("CelSyte.Models.User", "User")
@@ -346,25 +338,6 @@ namespace CelSyte.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("CelSyte.Models.CompositionElement", b =>
-                {
-                    b.HasOne("CelSyte.Models.Canvas", "Canvas")
-                        .WithMany("CompositionElements")
-                        .HasForeignKey("CanvasId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CelSyte.Models.Image", "Image")
-                        .WithMany("CompositionElements")
-                        .HasForeignKey("ImageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Canvas");
-
-                    b.Navigation("Image");
                 });
 
             modelBuilder.Entity("CelSyte.Models.Image", b =>
@@ -478,16 +451,6 @@ namespace CelSyte.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("CelSyte.Models.Canvas", b =>
-                {
-                    b.Navigation("CompositionElements");
-                });
-
-            modelBuilder.Entity("CelSyte.Models.Image", b =>
-                {
-                    b.Navigation("CompositionElements");
                 });
 #pragma warning restore 612, 618
         }

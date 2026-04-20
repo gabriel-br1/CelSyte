@@ -1,0 +1,89 @@
+﻿@page "/canvas/edit"
+@using Microsoft.EntityFrameworkCore
+@using CelSyte.Models
+@inject IDbContextFactory<CelSyte.Data.CelSyteContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>Canvas</h2>
+<hr />
+@if (Canvas is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Canvas" OnValidSubmit="UpdateCanvas" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="Canvas.Id" value="@Canvas.Id" />
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name:</label>
+                    <InputText id="name" @bind-Value="Canvas.Name" class="form-control" />
+                    <ValidationMessage For="() => Canvas.Name" class="text-danger" />
+                </div>
+                <button type="submit" class="btn formbutton">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a class="linkcol" href="/canvas">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private Canvas? Canvas { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        Canvas ??= await context.Canvas.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (Canvas is null)
+        {
+            NavigationManager.NotFound();
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateCanvas()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(Canvas!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!CanvasExists(Canvas!.Id))
+            {
+                NavigationManager.NotFound();
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/canvas");
+    }
+
+    private bool CanvasExists(int id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.Canvas.Any(e => e.Id == id);
+    }
+}

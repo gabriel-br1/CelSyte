@@ -30,6 +30,8 @@ builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuth
 
 builder.Services.AddScoped<ImageService>();
 
+builder.Services.AddScoped<CompositionElementService>();
+
 builder.Services.AddHttpClient();
 
 builder.Services.AddHttpContextAccessor();

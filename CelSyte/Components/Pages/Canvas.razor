@@ -1,22 +1,66 @@
-﻿@page "/canvas"
+﻿@page "/canvas/use"
 @rendermode InteractiveServer
 @using System.Runtime.InteropServices
+@using CelSyte.Models
+@using CelSyte.Services
+@using Microsoft.EntityFrameworkCore
 @inject IJSRuntime JS
+@inject IDbContextFactory<CelSyte.Data.CelSyteContext> DbFactory
+@inject NavigationManager NavigationManager
+@inject CompositionElementService CompositionElementService
+@inject ImageService ImageService
 
 <PageTitle>Canvas</PageTitle>
 
 <div class="canvas-layout">
     <div class="workspace">
-
+        <!--<div class="draggable" style="width:200px; height:200px; background-color:#1FD4C0; position:absolute;"></div>-->
     </div>
     <div class="asset-organizer">
-        <div class="draggable" style="width:200px; height:200px; background-color:#1FD4C0; position:absolute;"></div>
+        <button @onclick="OnAddImagesBtnPress" class="btn btn-lg formbutton">Add images</button>
+        @if(Images != null && Images.Any())
+        {
+            <div>
+                @foreach (var image in Images)
+                {
+                    <div class="my-1 border border-light">
+                        <p>@image.Name</p>
+                    </div>
+                }
+            </div>
+        }
     </div>
 </div>
 
 @code {
+    [SupplyParameterFromQuery]
+    public int? Id { get; set; }
 
     private IJSObjectReference? module;
+
+    private CelSyte.Models.Canvas? _canvas;
+
+    public List<Image> Images { get; set; } = new List<Image>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        _canvas = await context.Canvas
+        .Include(c => c.CompositionElements)
+        .FirstOrDefaultAsync(c => c.Id == Id);
+
+        if (_canvas is null)
+        {
+            NavigationManager.NotFound();
+        }
+
+        List<CompositionElement> canvasElements = CompositionElementService.findCanvasCompElements(_canvas.Id, DbFactory);
+
+        foreach(CompositionElement element in canvasElements)
+        {
+            Images.Add(ImageService.findImageById(element.ImageId, DbFactory));
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -26,6 +70,11 @@
 
             await module.InvokeVoidAsync("moveComponent", ".draggable");
         }
+    }
+
+    private void OnAddImagesBtnPress()
+    {
+        NavigationManager.NavigateTo($"Canvas/Images?id={_canvas.Id}");
     }
 
 }

@@ -1,0 +1,61 @@
+﻿@page "/canvas/create"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using CelSyte.Models
+@inject IDbContextFactory<CelSyte.Data.CelSyteContext> DbFactory
+@inject NavigationManager NavigationManager
+@inject UserManager<User> UserManager
+@inject IHttpContextAccessor IHttpContextAccessor
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>Canvas</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="canvas" OnValidSubmit="AddCanvas" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="name" class="form-label">Name:</label> 
+                <InputText id="name" @bind-Value="canvas.Name" class="form-control" /> 
+                <ValidationMessage For="() => canvas.Name" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn formbutton">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a class="linkcol" href="/canvas">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private Canvas canvas { get; set; } = default!;
+
+    private UserManager<User> userManager { get; set; }
+
+    public IHttpContextAccessor httpContextAccessor { get; set; }
+
+    protected override void OnInitialized() 
+    {
+        canvas ??= new();
+        userManager = UserManager;
+        httpContextAccessor = IHttpContextAccessor;
+    }
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddCanvas()
+    {
+        using var context = DbFactory.CreateDbContext();
+        var currentUser = await userManager.GetUserAsync(httpContextAccessor.HttpContext.User);
+        canvas.UserId = currentUser.Id;
+        context.Canvas.Add(canvas);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/canvas");
+    }
+}

@@ -1,0 +1,46 @@
+﻿@page "/canvas/details"
+@using Microsoft.EntityFrameworkCore
+@using CelSyte.Models
+@inject IDbContextFactory<CelSyte.Data.CelSyteContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>Canvas</h2>
+    <hr />
+    @if (canvas is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">Name</dt>
+            <dd class="col-sm-10">@canvas.Name</dd>
+        </dl>
+        <div>
+            <a class="linkcol" href="@($"/canvas/edit?id={canvas.Id}")">Edit</a> |
+            <a class="linkcol" href="@($"/canvas")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private Canvas? canvas;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        canvas = await context.Canvas.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (canvas is null)
+        {
+            NavigationManager.NotFound();
+        }
+    }
+}

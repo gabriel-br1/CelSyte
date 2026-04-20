@@ -40,13 +40,13 @@
     [SupplyParameterFromForm]
     private Image Image { get; set; } = default!;
 
-    private User user { get; set; }
+    private User User { get; set; }
 
-    private UserManager<User> userManager { get; set; }
+    private UserManager<User> _userManager { get; set; }
 
     public IHttpClientFactory HttpClientFactory { get; set; }
 
-    public IHttpContextAccessor httpContextAccessor { get; set; }
+    public IHttpContextAccessor HttpContextAccessor { get; set; }
 
     private IBrowserFile BrowserFile { get; set; }
 
@@ -66,8 +66,8 @@
     {
         HttpClientFactory = httpClientFactory;
         Image ??= new();
-        userManager = UserManager;
-        httpContextAccessor = IHttpContextAccessor;
+        _userManager = UserManager;
+        HttpContextAccessor = IHttpContextAccessor;
     }
 
     private async Task UploadFile()
@@ -85,7 +85,7 @@
 
                 try
                 {
-                    var currentUser = await userManager.GetUserAsync(httpContextAccessor.HttpContext.User);
+                    var currentUser = await _userManager.GetUserAsync(HttpContextAccessor.HttpContext.User);
                     var client = HttpClientFactory.CreateClient();
                     var result = await client.PostAsync("http://localhost:5041/upload-file", content);
                     System.Diagnostics.Debug.WriteLine(result);

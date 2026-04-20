@@ -1,4 +1,4 @@
-﻿@page "/Account/Images"
+﻿@page "/Canvas/Images"
 
 @using System.ComponentModel.DataAnnotations
 @using CelSyte.Services
@@ -9,18 +9,20 @@
 @inject UserManager<User> UserManager
 @inject SignInManager<User> SignInManager
 @inject IdentityRedirectManager RedirectManager
-@inject IDbContextFactory<CelSyte.Data.CelSyteContext> DbFactory
-@inject ImageService ImageService
+@inject NavigationManager NavigationManager
 
 <PageTitle>Profile</PageTitle>
 
-<DisplayImages Images="_images" />
+<SelectImages UserId="@UserId" CanvasId="@Id" />
+
 
 @code {
+    [SupplyParameterFromQuery]
+    public int Id { get; set; }
+
+    public string UserId { get; set; }
 
     private User? _user { get; set; }
-
-    private List<Image> _images { get; set; } = new List<Image>();
 
     [CascadingParameter]
     public HttpContext HttpContext { get; set; } = default!;
@@ -34,10 +36,6 @@
             RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
             return;
         }
-        else
-        {
-            _images = ImageService.findUserImages(_user.Id, DbFactory);
-        }
-
+        UserId = _user.Id;
     }
 }

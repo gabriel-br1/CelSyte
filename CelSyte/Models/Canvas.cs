@@ -3,16 +3,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CelSyte.Models
 {
-    public class Image
+    public class Canvas
     {
+
         [Key]
         public int Id { get; set; }
 
-        public string FileName { get; set; }
-
         public string Name { get; set; }
-
-        public string Tags { get; set; }
 
         public List<CompositionElement> CompositionElements { get; set; } = new();
 
@@ -20,5 +17,6 @@ namespace CelSyte.Models
 
         [ValidateNever]
         public User User { get; set; } = null!;
+
     }
 }

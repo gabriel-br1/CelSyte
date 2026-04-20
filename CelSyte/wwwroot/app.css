@@ -75,3 +75,13 @@ h1:focus {
     height: 350px;
     object-fit: cover;
 }
+
+.canvasimageselect {
+    width: 12vw;
+    height: 100%
+}
+
+.canvasimageselection {
+    width: 87vw;
+    flex-wrap: wrap-reverse;
+}

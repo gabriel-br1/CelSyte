@@ -1,0 +1,139 @@
+﻿@using CelSyte.Services
+@using Microsoft.EntityFrameworkCore
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+@inject IDbContextFactory<CelSyte.Data.CelSyteContext> DbFactory
+@inject ImageService ImageService
+
+<h3>Images</h3>
+
+<div class="d-flex">
+    <EditForm Model="Canvas" OnValidSubmit="AddImagesToCanvas">
+        <div class="d-flex">
+            <div class="d-flex canvasimageselection">
+                @foreach (var image in Images)
+                {
+                    <div class="mx-2 my-1 border border-light">
+                        <a href="@($"/images/edit?id={@image.Id}")" class="linkcol">
+                            <img class="imagecard" src="/images/@image.FileName" />
+                            <p>@image.Name</p>
+                        </a>
+                    </div>
+                }
+            </div>
+            <div class="d-flex flex-column">
+                <select multiple @onchange="HandleSelectChange" class="form-select canvasimageselect">
+                    @foreach (var image in Images)
+                    {
+                        <option value="@image.Id" selected="@ImageIds.Contains(image.Id)">@image.Name</option>
+                    }
+                </select>
+                <button type="submit" class="btn btn-lg formbutton">Add image(s)</button>
+            </div>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public int CanvasId { get; set; }
+
+    [Parameter]
+    public string UserId { get; set; }
+
+    public List<Image> Images { get; set; } = new List<Image>();
+
+    public Canvas? Canvas { get; set; } = new Canvas();
+
+    public List<int> ImageIds { get; set; } = new List<int>();
+
+    public List<CompositionElement> CompositionElements { get; set; } = new List<CompositionElement>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Images = ImageService.findUserImages(UserId, DbFactory);
+
+        using var context = DbFactory.CreateDbContext();
+        Canvas = await context.Canvas
+        .Include(c => c.CompositionElements)
+        .FirstOrDefaultAsync(c => c.Id == CanvasId);
+
+        ImageIds = Canvas.CompositionElements
+        .Select(i => i.Image.Id)
+        .ToList();
+    }
+
+    private void HandleSelectChange(ChangeEventArgs e)
+    {
+        var selectedValues = ((IEnumerable<string>)e.Value);
+
+        ImageIds = selectedValues
+        .Select(v => int.Parse(v))
+        .ToList();
+    }
+
+    public async Task AddImagesToCanvas()
+    {
+
+        using var context = DbFactory.CreateDbContext();
+        var canvasToUpdate = await context.Canvas
+        .Include(c => c.CompositionElements)
+        .FirstOrDefaultAsync(c => c.Id == CanvasId);
+
+        if(canvasToUpdate == null)
+        {
+            return;
+        }
+
+        var selectedImages = await context.Image
+        .Where(i => ImageIds.Contains(i.Id))
+        .Include(i => i.CompositionElements)
+        .ToListAsync();
+
+        List<Image> compElementImages = new List<Image>();
+        foreach(CompositionElement compElement in Canvas.CompositionElements)
+        {
+            compElementImages.Add(compElement.Image);
+        }
+
+        foreach (Image image in compElementImages)
+        {
+            foreach(int id in ImageIds)
+            {
+                if(id == image.Id)
+                {
+                    selectedImages.Remove(image);
+                    break;
+                }
+            }
+
+        }
+
+        foreach (Image image in selectedImages)
+        {
+            var compElement = await SaveCompElement(image, canvasToUpdate);
+            CompositionElements.Add(compElement);
+            image.CompositionElements.Add(compElement);
+        }
+
+        canvasToUpdate.CompositionElements = CompositionElements;
+
+        await context.SaveChangesAsync();
+
+        NavigationManager.NavigateTo($"canvas/use?id={Canvas.Id}", forceLoad:true);
+    }
+
+    private async Task<CompositionElement> SaveCompElement(Image image, Canvas canvas)
+    {
+        CompositionElement CompositionElement = new CompositionElement();
+        CompositionElement.ImageId = image.Id;
+        CompositionElement.CanvasId = canvas.Id;
+
+        using var context = DbFactory.CreateDbContext();
+        context.CompositionElement.Add(CompositionElement);
+        await context.SaveChangesAsync();
+
+        return CompositionElement;
+    }
+
+}

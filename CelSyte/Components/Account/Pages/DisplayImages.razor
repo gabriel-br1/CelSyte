@@ -1,0 +1,21 @@
+﻿<h3>Images</h3>
+<StatusMessage />
+
+<div class="">
+    <div class="d-flex">
+        @foreach (var image in Images)
+        {
+            <div class="mx-2 my-1 border border-light">
+                <a href="@($"/images/edit?id={@image.Id}")" class="linkcol">
+                    <img class="imagecard" src="/images/@image.FileName" />
+                    <p>@image.Name</p>
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public List<Image> Images { get; set; } = default!;
+}

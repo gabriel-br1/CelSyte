@@ -176,6 +176,26 @@ namespace CelSyte.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Canvas",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Canvas", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Canvas_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Image",
                 columns: table => new
                 {
@@ -195,6 +215,30 @@ namespace CelSyte.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CanvasImage",
+                columns: table => new
+                {
+                    CanvasesId = table.Column<int>(type: "int", nullable: false),
+                    ImagesId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CanvasImage", x => new { x.CanvasesId, x.ImagesId });
+                    table.ForeignKey(
+                        name: "FK_CanvasImage_Canvas_CanvasesId",
+                        column: x => x.CanvasesId,
+                        principalTable: "Canvas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.NoAction);
+                    table.ForeignKey(
+                        name: "FK_CanvasImage_Image_ImagesId",
+                        column: x => x.ImagesId,
+                        principalTable: "Image",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.NoAction);
                 });
 
             migrationBuilder.CreateIndex(
@@ -242,6 +286,16 @@ namespace CelSyte.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Canvas_UserId",
+                table: "Canvas",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CanvasImage_ImagesId",
+                table: "CanvasImage",
+                column: "ImagesId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Image_UserId",
                 table: "Image",
                 column: "UserId");
@@ -269,10 +323,16 @@ namespace CelSyte.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Image");
+                name: "CanvasImage");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Canvas");
+
+            migrationBuilder.DropTable(
+                name: "Image");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

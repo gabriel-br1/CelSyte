@@ -1,30 +1,46 @@
-﻿using CelSyte.Data;
-using CelSyte.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Image = CelSyte.Models.Image;
 namespace CelSyte.Services
 {
     public class ImageService
     {
 
-        CelSyteContext _dbContext = null;
-
-        public ImageService(CelSyteContext dbContext)
+        public ImageService()
         {
-            _dbContext = dbContext;
         }
 
-        public List<Image> findUserImages(string userId)
+        public List<Image> findUserImages(string userId, IDbContextFactory<CelSyte.Data.CelSyteContext> DbFactory)
         {
             List<Image> images = new List<Image>();
-            DbSet<Image> dbImages = _dbContext.Set<Image>();
-            foreach (Image image in dbImages) 
+            List<Image> returnImages = new List<Image>();
+            using var context = DbFactory.CreateDbContext();
+            images = context.Set<Image>().ToList();
+
+            System.Diagnostics.Debug.WriteLine(images.Count());
+
+            foreach (Image image in images) 
             { 
                 if(image.UserId == userId)
                 {
-                    images.Add(image);
+                    returnImages.Add(image);
                 }
             }
-            return images;
+            return returnImages;
+        }
+
+        public Image findImageById(int imageId, IDbContextFactory<CelSyte.Data.CelSyteContext> DbFactory)
+        {
+            using var context = DbFactory.CreateDbContext();
+            List<Image> images = context.Set<Image>().ToList();
+
+            foreach(Image image in images)
+            {
+                if(image.Id == imageId)
+                {
+                    return image;
+                }
+            }
+            return null;
         }
 
     }
